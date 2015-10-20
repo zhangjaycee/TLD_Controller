@@ -1,4 +1,5 @@
 #!/bin/bash
 
+
 cd bin
-./run_tld -p ../parameters.yml -tl
+sudo ./run_tld -p ../parameters.yml -tl -d 1 

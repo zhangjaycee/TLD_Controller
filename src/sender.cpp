@@ -119,7 +119,8 @@ void calControlStr(int gasValue,int dirValue)
     ctrlStr[0]='$';
     ctrlStr[1]=gasValue;
     ctrlStr[2]=dirValue;
-    ctrlStr[3]='\0';
+    ctrlStr[3]=(gasValue+dirValue)&0xff;
+    ctrlStr[4]='\0';
 }
 
 void senderInit(){
