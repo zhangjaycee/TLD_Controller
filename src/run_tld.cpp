@@ -130,7 +130,8 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
 
 int main(int argc, char * argv[]){
   VideoCapture capture;
-  capture.open(1);
+//  capture.open(1);
+  capture.open(0);
   senderInit();
   FileStorage fs;
   //Read options

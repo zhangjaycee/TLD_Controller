@@ -81,6 +81,7 @@ void calLast2(char * str){
 
 void getGasValue(int dy)
 {
+    /*
    if(dy>0){
         if(dy<30){
             gasValue=dy*4;
@@ -93,34 +94,55 @@ void getGasValue(int dy)
         }
     }else{
         gasValue=0;
+    }*/
+    if(dy>0){
+        gasValue = dy;
+    }
+    else{
+        gasValue = 128-dy;
     }
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
 {
-    if(dx>20){
-       dirValue=15;
+    if(dx>0){
+       dirValue=70;
         // if(dx>125)
           //  dx=125;
       //  dirValue=128+dx-20;
-    }else if(dx<-20){
-     dirValue=143;
+    }else{
+     dirValue=197;
         //  if(dx<-125)
         //   dx=-125;
       // dirValue=-dx+20;
-    }else{
-        dirValue=0;
     }
     dirDeToHex(dirValue);
 }
-
+/*
 void calControlStr(int gasValue,int dirValue)
 {
     ctrlStr[0]='$';
     ctrlStr[1]=gasValue;
     ctrlStr[2]=dirValue;
     ctrlStr[3]='\0';
+}*/
+void calControlStr(int gasValue,int dirValue)
+{
+    ctrlStr[0]=':'; ctrlStr[1]='R';ctrlStr[2]='C';
+    for(int i=3;i<=10;i++){
+        ctrlStr[i]='0';
+    }
+    ctrlStr[5]=gasValueChars[0];ctrlStr[6]=gasValueChars[1];
+    ctrlStr[7]=dirValueChars[0];
+    ctrlStr[8]=dirValueChars[1];
+    //crtlStr[9/10] is 0
+    ctrlStr[11]='\0';
+    calLast2(ctrlStr);
+    ctrlStr[11]=last2[0];
+    ctrlStr[12]=last2[1];
+    ctrlStr[13]='/';
 }
+
 
 void senderInit(){
     fd = open("/dev/ttyUSB0", O_RDWR);
