@@ -1,9 +1,4 @@
-/*
- * TLD.cpp
- *
- *  Created on: Jun 9, 2011
- *      Author: alantrrs
- */
+
 #define X_CENTER 160
 #define Y_CENTER 120
 
@@ -13,6 +8,9 @@
 using namespace cv;
 using namespace std;
 extern int dx,dy;
+extern char ctrlStr[20];
+extern int gasValue;
+extern int dirValue;
 TLD::TLD()
 {
 }
@@ -309,11 +307,14 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   lastbox=bbnext;
   if (lastboxfound){
     fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
-    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
+//    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     printf("$$$dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     dx=lastbox.x-X_CENTER;
     dy=lastbox.y-Y_CENTER;
-    calControlStr(-dy, dx);
+    getGasValue(-dy);
+    getDirValue(dx);
+    calControlStr(gasValue, dirValue);
+    fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();
   }
   else
