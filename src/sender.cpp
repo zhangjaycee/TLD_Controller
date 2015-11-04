@@ -124,10 +124,6 @@ void calControlStr(int gasValue,int dirValue)
     ctrlStr[0]='$';
     ctrlStr[1]=gasValue;
     ctrlStr[2]=dirValue;
-<<<<<<< HEAD
-    ctrlStr[3]=(gasValue+dirValue)&0xff;
-    ctrlStr[4]='\0';
-=======
     ctrlStr[3]='\0';
 }*/
 void calControlStr(int gasValue,int dirValue)
@@ -145,7 +141,6 @@ void calControlStr(int gasValue,int dirValue)
     ctrlStr[11]=last2[0];
     ctrlStr[12]=last2[1];
     ctrlStr[13]='/';
->>>>>>> 16cdf4fd7c5c699175333067b396f129f839d457
 }
 
 

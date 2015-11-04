@@ -20,7 +20,6 @@ bool gotBB = false;
 bool tl = false;
 bool rep = false;
 bool fromfile=false;
-int cam_num=0;
 string video;
 
 
@@ -126,25 +125,18 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
       if (strcmp(argv[i],"-r")==0){
           rep = true;
       }
-      if (strcmp(argv[i],"-d")==0){
-          cam_num = (int)argv[i+1]-'0';
-      }
   }
 }
 
 int main(int argc, char * argv[]){
   VideoCapture capture;
-<<<<<<< HEAD
-=======
 //  capture.open(1);
   capture.open(0);
->>>>>>> 16cdf4fd7c5c699175333067b396f129f839d457
   senderInit();
   FileStorage fs;
   //Read options
   read_options(argc,argv,capture,fs);
   //Init camera
-  capture.open(cam_num);
   if (!capture.isOpened())
   {
 	cout << "capture device failed to open!" << endl;
@@ -165,7 +157,7 @@ int main(int argc, char * argv[]){
       cvtColor(frame, last_gray, CV_RGB2GRAY);
       frame.copyTo(first);
   }else{
-      capture.set(CV_CAP_PROP_FRAME_WIDTH,320);
+      capture.set(CV_CAP_PROP_FRAME_WIDTH,340);
       capture.set(CV_CAP_PROP_FRAME_HEIGHT,240);
   }
 
