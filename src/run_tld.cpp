@@ -25,10 +25,11 @@ string video;
 
 
 //////
+int fd;
 char ctrlStr[20];
 struct termios options ,oldoptions;
 
-int fd;
+int cam_num;
 int open_error_flag=0;
 int dx,dy;
 
@@ -41,7 +42,7 @@ char dirValueChars[2];
 char last2[2];
 
 /////
-
+int flag_landing = 0;
 
 void readBB(char* file){
   ifstream bb_file (file);
@@ -102,15 +103,11 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
           else
             print_help(argv);
       }
-      if (strcmp(argv[i],"-s")==0){
-          if (argc>i){
-              video = string(argv[i+1]);
-              capture.open(video);
-              fromfile = true;
-          }
-          else
-            print_help(argv);
-
+      if (strcmp(argv[i],"-v0")==0){
+           capture.open(0);
+      }
+      if (strcmp(argv[i],"-v1")==0){
+           capture.open(1);
       }
       if (strcmp(argv[i],"-p")==0){
           if (argc>i){
@@ -130,8 +127,6 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
 
 int main(int argc, char * argv[]){
   VideoCapture capture;
-//  capture.open(1);
-  capture.open(1);
   senderInit();
   FileStorage fs;
   //Read options
