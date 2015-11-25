@@ -11,6 +11,7 @@ extern int dx,dy;
 extern char ctrlStr[20];
 extern int gasValue;
 extern int dirValue;
+extern int flag_found;
 TLD::TLD()
 {
 }
@@ -306,11 +307,12 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   }
   lastbox=bbnext;
   if (lastboxfound){
+    flag_found = 1;
     fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
 //    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     printf("data dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
-    dx=lastbox.x-X_CENTER;
-    dy=lastbox.y-Y_CENTER;
+    dx=lastbox.x + int(lastbox.width/2) -X_CENTER;
+    dy=lastbox.y+ int(lastbox.height/2) -Y_CENTER;
     getGasValue(-dy);
     getDirValue(dx);
     calControlStr(gasValue, dirValue);
@@ -318,10 +320,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     sendControlStr();
   }
   else{
-    dx=0;
-    dy=0;
-    getGasValue(-dy);
-    getDirValue(dx);
+    flag_found = 0;
     calControlStr(gasValue, dirValue);
     fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();

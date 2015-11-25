@@ -24,6 +24,7 @@ extern char dirValueChars[2];
 extern char last2[2];
 extern char ctrlStr[20];
 extern int flag_landing;
+extern int flag_found;
 
 void gasDeToHex(int gasValue)
 {
@@ -151,7 +152,7 @@ void calControlStr(int gasValue,int dirValue)
     }
     printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
     //现在tmp_dir和tmp_gas都为dx或dy的绝对值
-    if (tmp_dir < 3 && tmp_gas <3){
+    if (tmp_dir < 5 && tmp_gas < 5){
         flag_landing = 1;   
     }
     ctrlStr[0]=':'; ctrlStr[1]='R';ctrlStr[2]='C';
@@ -162,12 +163,14 @@ void calControlStr(int gasValue,int dirValue)
         ctrlStr[9] = '0';
         ctrlStr[10] = 'A';
     }
-    else{//降落标志不是0:[: RC xx xx 00 00 xx /]
-        ctrlStr[5]=dirValueChars[0];
-        ctrlStr[6]=dirValueChars[1];
-        ctrlStr[7]=gasValueChars[0];
-        ctrlStr[8]=gasValueChars[1];
-        //crtlStr[9/10] is 0
+    if(flag_found){
+        if (flag_landing == 0) {//降落标志不是0:[: RC xx xx 00 00 xx /]
+            ctrlStr[5]=dirValueChars[0];
+            ctrlStr[6]=dirValueChars[1];
+            ctrlStr[7]=gasValueChars[0];
+            ctrlStr[8]=gasValueChars[1];
+            //crtlStr[9/10] is 0
+        }
     }
     ctrlStr[11]='\0';
     calLast2(ctrlStr);

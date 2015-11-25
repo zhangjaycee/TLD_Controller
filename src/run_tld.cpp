@@ -43,6 +43,7 @@ char last2[2];
 
 /////
 int flag_landing = 0;
+int flag_found = 0;
 
 void readBB(char* file){
   ifstream bb_file (file);
