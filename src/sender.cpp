@@ -95,26 +95,33 @@ void getGasValue(int dy)
     }else{
         gasValue=0;
     }*/
-    if(dy>0){
-        gasValue = dy;
+    if(dy<=-128){
+        dy =-128;
+    }
+    if(dy>=127){
+        dy = 127;
+    }
+    if(dy<0){
+        gasValue = - dy;
     }
     else{
-        gasValue = 128-dy;
+        gasValue = 128 + dy;
     }
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
 {
+    if(dx<=-128){
+        dx =-128;
+    }
+    if(dx>=127){
+        dx = 127;
+    }
     if(dx>0){
-       dirValue=70;
-        // if(dx>125)
-          //  dx=125;
-      //  dirValue=128+dx-20;
-    }else{
-     dirValue=197;
-        //  if(dx<-125)
-        //   dx=-125;
-      // dirValue=-dx+20;
+        dirValue = dx;
+    }
+    else{
+        dirValue = 128-dx;
     }
     dirDeToHex(dirValue);
 }
@@ -132,9 +139,10 @@ void calControlStr(int gasValue,int dirValue)
     for(int i=3;i<=10;i++){
         ctrlStr[i]='0';
     }
-    ctrlStr[5]=gasValueChars[0];ctrlStr[6]=gasValueChars[1];
-    ctrlStr[7]=dirValueChars[0];
-    ctrlStr[8]=dirValueChars[1];
+    ctrlStr[5]=dirValueChars[0];
+    ctrlStr[6]=dirValueChars[1];
+    ctrlStr[7]=gasValueChars[0];
+    ctrlStr[8]=gasValueChars[1];
     //crtlStr[9/10] is 0
     ctrlStr[11]='\0';
     calLast2(ctrlStr);
@@ -171,9 +179,9 @@ void sendControlStr()
 {
     if(!open_error_flag){
         write(fd,ctrlStr, strlen(ctrlStr));
-        printf("[send success] %s\n",ctrlStr);
+        printf("data [send success] %s\n",ctrlStr);
     }else
-        printf("[send failed] %s\n",ctrlStr);
+        printf("data [send failed] %s\n",ctrlStr);
 }
 /*
 int main()

@@ -131,7 +131,7 @@ void read_options(int argc, char** argv,VideoCapture& capture,FileStorage &fs){
 int main(int argc, char * argv[]){
   VideoCapture capture;
 //  capture.open(1);
-  capture.open(0);
+  capture.open(1);
   senderInit();
   FileStorage fs;
   //Read options
@@ -157,7 +157,7 @@ int main(int argc, char * argv[]){
       cvtColor(frame, last_gray, CV_RGB2GRAY);
       frame.copyTo(first);
   }else{
-      capture.set(CV_CAP_PROP_FRAME_WIDTH,340);
+      capture.set(CV_CAP_PROP_FRAME_WIDTH,320);
       capture.set(CV_CAP_PROP_FRAME_HEIGHT,240);
   }
 

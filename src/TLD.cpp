@@ -308,7 +308,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   if (lastboxfound){
     fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
 //    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
-    printf("$$$dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
+    printf("data dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     dx=lastbox.x-X_CENTER;
     dy=lastbox.y-Y_CENTER;
     getGasValue(-dy);
@@ -317,8 +317,16 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();
   }
-  else
+  else{
+    dx=0;
+    dy=0;
+    getGasValue(-dy);
+    getDirValue(dx);
+    calControlStr(gasValue, dirValue);
+    fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    sendControlStr();
     fprintf(bb_file,"NaN,NaN,NaN,NaN,NaN\n");
+  }
   if (lastvalid && tl)
     learn(img2);
 }
