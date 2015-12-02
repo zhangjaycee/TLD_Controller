@@ -122,7 +122,7 @@ public:
   void generatePositiveData(const cv::Mat& frame, int num_warps);
   void generateNegativeData(const cv::Mat& frame);
   void processFrame(const cv::Mat& img1,const cv::Mat& img2,std::vector<cv::Point2f>& points1,std::vector<cv::Point2f>& points2,
-      BoundingBox& bbnext,bool& lastboxfound, bool tl,FILE* bb_file,FILE* testfile);
+      BoundingBox& bbnext,bool& lastboxfound, bool tl,FILE* bb_file,FILE* testfile,std::vector<cv::Point2f>&);
   void track(const cv::Mat& img1, const cv::Mat& img2,std::vector<cv::Point2f>& points1,std::vector<cv::Point2f>& points2);
   void detect(const cv::Mat& frame);
   void clusterConf(const std::vector<BoundingBox>& dbb,const std::vector<float>& dconf,std::vector<BoundingBox>& cbb,std::vector<float>& cconf);

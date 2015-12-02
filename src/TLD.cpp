@@ -225,7 +225,7 @@ double TLD::getVar(const BoundingBox& box,const Mat& sum,const Mat& sqsum){
   return sqmean-mean*mean;
 }
 
-void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& points1,vector<Point2f>& points2,BoundingBox& bbnext,bool& lastboxfound, bool tl, FILE* bb_file,FILE* testfile){
+void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& points1,vector<Point2f>& points2,BoundingBox& bbnext,bool& lastboxfound, bool tl, FILE* bb_file,FILE* testfile,vector<Point2f>& pts_history){
   vector<BoundingBox> cbb;
   vector<float> cconf;
   int confident_detections=0;
@@ -313,6 +313,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     printf("data dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     dx=(lastbox.x + int(lastbox.width/2) -X_CENTER)/2;
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
+    pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
     getGasValue(-dy);
     getDirValue(dx);
     calControlStr(gasValue, dirValue);

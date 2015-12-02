@@ -43,6 +43,7 @@ char gasValueChars[2];
 char dirValueChars[2];
 char last2[2];
 
+
 /////
 int flag_landing = 0;
 int flag_found = 0;
@@ -193,6 +194,7 @@ GETBOUNDINGBOX:
   BoundingBox pbox;
   vector<Point2f> pts1;
   vector<Point2f> pts2;
+  vector<Point2f> pts_history;
   bool status=true;
   int frames = 1;
   int detections = 1;
@@ -201,7 +203,7 @@ REPEAT:
     //get frame
     cvtColor(frame, current_gray, CV_RGB2GRAY);
     //Process Frame
-    tld.processFrame(last_gray,current_gray,pts1,pts2,pbox,status,tl,bb_file,testfile);
+    tld.processFrame(last_gray,current_gray,pts1,pts2,pbox,status,tl,bb_file,testfile,pts_history);
     //Send Message
 
 
@@ -212,6 +214,7 @@ REPEAT:
       drawBox(frame,pbox);
       detections++;
     }
+      drawPoints(frame,pts_history,Scalar(255,0,0));
     //Display
     imshow("TLD", frame);
     //swap points and images
