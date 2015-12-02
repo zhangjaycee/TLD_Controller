@@ -1,3 +1,5 @@
+#define CAM_WIDTH 640
+#define CAM_HEIGHT 480
 #include <opencv2/opencv.hpp>
 #include <tld_utils.h>
 #include <iostream>
@@ -153,8 +155,8 @@ int main(int argc, char * argv[]){
       cvtColor(frame, last_gray, CV_RGB2GRAY);
       frame.copyTo(first);
   }else{
-      capture.set(CV_CAP_PROP_FRAME_WIDTH,320);
-      capture.set(CV_CAP_PROP_FRAME_HEIGHT,240);
+      capture.set(CV_CAP_PROP_FRAME_WIDTH,CAM_WIDTH);
+      capture.set(CV_CAP_PROP_FRAME_HEIGHT,CAM_HEIGHT);
   }
 
   ///Initialization
