@@ -1,6 +1,6 @@
 
-#define X_CENTER 160
-#define Y_CENTER 120
+#define X_CENTER 320
+#define Y_CENTER 240
 
 #include <TLD.h>
 #include <stdio.h>
@@ -311,8 +311,8 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
 //    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     printf("data dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
-    dx=lastbox.x + int(lastbox.width/2) -X_CENTER;
-    dy=lastbox.y+ int(lastbox.height/2) -Y_CENTER;
+    dx=(lastbox.x + int(lastbox.width/2) -X_CENTER)/2;
+    dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
     getGasValue(-dy);
     getDirValue(dx);
     calControlStr(gasValue, dirValue);
