@@ -1,6 +1,11 @@
-
 #define X_CENTER 320
 #define Y_CENTER 240
+#define ADJ_HIGH 1.0
+#define ADJ_LOW 2.5
+//ADJ_HIGHT 和 ADJ_LOW是第一次开始降落后，每一帧的当前框边长和开始下落边长之比adjust_k
+//所以 ADJ_LOW > adjust_k > ADJ_HIGH 的时候，进入可调整区
+
+//比如。若初始高度10米，设置 ADJ_HIGH 为1.0， ADJ_LOW 为2.5， 则可调整区高度大约为4米~10米间。
 
 #include <TLD.h>
 #include <stdio.h>
@@ -12,6 +17,11 @@ extern char ctrlStr[20];
 extern int gasValue;
 extern int dirValue;
 extern int flag_found;
+extern int flag_landing;
+extern int flag_adjust;
+extern int landing_width;
+extern int landing_height;
+
 TLD::TLD()
 {
 }
@@ -316,6 +326,47 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
     getGasValue(-dy);
     getDirValue(dx);
+    /************v4 将sender.cpp中的calContrlStr函数的一段移动到这里更合适***********/
+    int tmp_gas = gasValue;
+    int tmp_dir = dirValue;
+    if (gasValue > 128){
+        tmp_gas -= 128;
+    }
+    if (dirValue > 128){
+        tmp_dir -= 128;
+    }
+    printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
+    //现在tmp_dir和tmp_gas都为dx或dy的绝对值
+    if (tmp_dir < 5 && tmp_gas < 5){//目标在中心
+        if (flag_landing == 0) {
+            //处于最开始的搜寻状态，则转为降落状态，
+            //并记录开始下降时的目标大小
+            flag_landing = 1;
+            landing_width = lastbox.width;
+            landing_height = lastbox.height;
+            printf("data [状态改变:1->2]\n");
+            printf("data [对准目标，开始下降]\n");
+            printf("data [对准目标，开始下降]\n");
+        } else if (flag_adjust == 1) {
+            //处于调整状态，则暂时关闭调整状态
+            flag_adjust = 0;
+            printf("data [状态改变2->3]\n");
+            printf("data [调整完毕，继续下降]\n");
+            printf("data [调整完毕，继续下降]\n");
+        }
+    }
+    /****************************v4**************************************************/
+    float adjust_k = (float)lastbox.width/landing_width;
+    if (flag_landing == 1 && flag_adjust == 0){ 
+        if ( (tmp_dir>lastbox.width/2 || tmp_gas>lastbox.height/2) && adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW) {
+        //dx和dy的绝对值任意一个大于当前框的边长，且在可调整高度区间内，则开始调整
+            flag_adjust = 1;
+            printf("data [状态改变3->2]\n");
+            printf("data [暂停下降，开始调整]\n");
+            printf("data [暂停下降，开始调整]\n");
+        }
+    }
+    /********************************************************************************/
     calControlStr(gasValue, dirValue);
     //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();

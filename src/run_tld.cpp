@@ -46,7 +46,10 @@ char last2[2];
 
 /////
 int flag_landing = 0;
+int flag_adjust = 0;
 int flag_found = 0;
+int landing_width = 0;
+int landing_height = 0;
 
 void readBB(char* file){
   ifstream bb_file (file);
