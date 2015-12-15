@@ -309,21 +309,21 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   if (lastboxfound){
     flag_found = 1;
     fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
-//    fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
-    printf("data dx=%d,dy=%d\n$$$",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
+    //fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     dx=(lastbox.x + int(lastbox.width/2) -X_CENTER)/2;
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
+    printf("data dx=%d, dy=%d, boxwidth=%d, boxheight=%d \n", dx, dy, lastbox.width, lastbox.height);
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
     getGasValue(-dy);
     getDirValue(dx);
     calControlStr(gasValue, dirValue);
-    fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();
   }
   else{
     flag_found = 0;
     calControlStr(gasValue, dirValue);
-    fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     sendControlStr();
     fprintf(bb_file,"NaN,NaN,NaN,NaN,NaN\n");
   }

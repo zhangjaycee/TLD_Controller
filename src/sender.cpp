@@ -152,25 +152,25 @@ void calControlStr(int gasValue,int dirValue)
     }
     printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
     //现在tmp_dir和tmp_gas都为dx或dy的绝对值
-    //if (tmp_dir < 5 && tmp_gas < 5){
-    //    flag_landing = 1;   
-    //}
+    if (tmp_dir < 5 && tmp_gas < 5){
+        flag_landing = 1;   
+    }
     ctrlStr[0]=':'; ctrlStr[1]='R';ctrlStr[2]='C';
     for(int i=3;i<=10;i++){
         ctrlStr[i]='0';
     }//现在:[: RC 00 00 00 00]
-    //if(flag_landing){//降落标志为1:[: RC 00 00 00 10 ]
-    //    ctrlStr[9] = '0';
-    //    ctrlStr[10] = 'A';
-    //}
+    if(flag_landing){//降落标志为1:[: RC 00 00 00 10 ]
+        ctrlStr[9] = '0';
+        ctrlStr[10] = 'A';
+    }
     if(flag_found){
-        //if (flag_landing == 0) {//降落标志不是0:[: RC xx xx 00 00 xx /]
+        if (flag_landing == 0) {//降落标志是0:[: RC xx xx 00 00 xx /]
             ctrlStr[5]=dirValueChars[0];
             ctrlStr[6]=dirValueChars[1];
             ctrlStr[7]=gasValueChars[0];
             ctrlStr[8]=gasValueChars[1];
             //crtlStr[9/10] is 0
-        //}
+        }
     }
     ctrlStr[11]='\0';
     calLast2(ctrlStr);
