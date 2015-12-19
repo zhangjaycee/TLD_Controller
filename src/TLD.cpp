@@ -21,6 +21,10 @@ extern int flag_landing;
 extern int flag_adjust;
 extern int landing_width;
 extern int landing_height;
+extern int ddx; 
+extern int ddy;
+extern int last_dx;
+extern int last_dy;
 
 TLD::TLD()
 {
@@ -347,12 +351,16 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             printf("data [状态改变:1->2]\n");
             printf("data [对准目标，开始下降]\n");
             printf("data [对准目标，开始下降]\n");
+            fprintf(testfile,"data [状态改变:1->2]\n");
+            fprintf(testfile,"data [对准目标，开始下降]\n");
         } else if (flag_adjust == 1) {
             //处于调整状态，则暂时关闭调整状态
             flag_adjust = 0;
             printf("data [状态改变2->3]\n");
             printf("data [调整完毕，继续下降]\n");
             printf("data [调整完毕，继续下降]\n");
+            fprintf(testfile,"data [状态改变2->3]\n");
+            fprintf(testfile,"data [调整完毕，继续下降]\n");
         }
     }
     /****************************v4**************************************************/
@@ -364,6 +372,8 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             printf("data [状态改变3->2]\n");
             printf("data [暂停下降，开始调整]\n");
             printf("data [暂停下降，开始调整]\n");
+            fprintf(testfile,"data [状态改变3->2]\n");
+            fprintf(testfile,"data [暂停下降，开始调整]\n");
         }
     }
     /********************************************************************************/
@@ -375,6 +385,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     flag_found = 0;
     calControlStr(gasValue, dirValue);
     //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    fprintf(testfile,"dx=%d,dy=%d\nlast_dx=%d,last_dy=%d\nddx=%d,ddy=%d\n%s\n", dx,dy,last_dx,last_dy,ddx,ddy,ctrlStr);
     sendControlStr();
     fprintf(bb_file,"NaN,NaN,NaN,NaN,NaN\n");
   }

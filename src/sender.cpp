@@ -1,3 +1,6 @@
+#define PID_P 1.0
+#define PID_D 0.5
+
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -26,6 +29,10 @@ extern char ctrlStr[20];
 extern int flag_landing;
 extern int flag_adjust;
 extern int flag_found;
+extern int last_dx;
+extern int last_dy;
+extern int ddx;
+extern int ddy;
 
 void gasDeToHex(int gasValue)
 {
@@ -109,6 +116,19 @@ void getGasValue(int dy)
     else{
         gasValue = 128 + dy;
     }
+/************************/
+    ddy = dy - last_dy;
+    printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
+    last_dy = dy; 
+    dy = PID_P * dy + PID_D * ddy;
+    if(dy<=-128){
+        dy =-125;
+    }
+    if(dy>=127){
+        dy = 125;
+    }
+    printf("[PID OK] dy = %d\n",dy);
+/************************/
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
@@ -125,6 +145,19 @@ void getDirValue(int dx)
     else{
         dirValue = 128-dx;
     }
+/************************/
+    ddx = dx - last_dx;
+    printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
+    last_dx = dx;
+    dx = PID_P * dx + PID_D * ddx;
+    if(dx<=-128){
+        dx =-125;
+    }
+    if(dx>=127){
+        dx = 125;
+    }
+    printf("[PID OK] dx = %d\n",dx);
+/************************/
     dirDeToHex(dirValue);
 }
 /*
