@@ -1,5 +1,6 @@
 #define PID_P 1.0
-#define PID_D 0.5
+#define PID_D 3.0
+#define PID_I 0.025
 
 #include <stdio.h>
 #include <termios.h>
@@ -33,6 +34,8 @@ extern int last_dx;
 extern int last_dy;
 extern int ddx;
 extern int ddy;
+extern int pid_xsum;
+extern int pid_ysum;
 
 void gasDeToHex(int gasValue)
 {
@@ -117,10 +120,11 @@ void getGasValue(int dy)
         gasValue = 128 + dy;
     }
 /************************/
+    pid_ysum += dy;
     ddy = dy - last_dy;
     printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
     last_dy = dy; 
-    dy = PID_P * dy + PID_D * ddy;
+    dy = PID_P * dy + PID_D * ddy + PID_I * pid_ysum;
     if(dy<=-128){
         dy =-125;
     }
@@ -146,10 +150,11 @@ void getDirValue(int dx)
         dirValue = 128-dx;
     }
 /************************/
+    pid_xsum += dx;
     ddx = dx - last_dx;
     printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
     last_dx = dx;
-    dx = PID_P * dx + PID_D * ddx;
+    dx = PID_P * dx + PID_D * ddx + PID_I * pid_xsum;
     if(dx<=-128){
         dx =-125;
     }

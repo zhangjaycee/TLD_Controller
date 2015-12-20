@@ -54,6 +54,8 @@ int last_dy = 0;
 int last_dx = 0;
 int ddx = 0;
 int ddy = 0;
+int pid_xsum = 0;
+int pid_ysum = 0;
 
 void readBB(char* file){
   ifstream bb_file (file);
