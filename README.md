@@ -1,3 +1,8 @@
+#version5_pid-builtin(加入pid的p和d参数)
+
+pid的参数在sender.cpp中define了，可调后重新编译
+
+
 #version4_adjust(实现降落时的调整)
 ## 状态
 状态1： flag_landing == 0 && flag_adjust == 0 : 最开始的搜寻状态，还未下降
