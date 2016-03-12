@@ -383,6 +383,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   }
   else{
     flag_found = 0;
+	printf("data [gasvalues]gasValue=%d,dirValue=%d\n ",gasValue,dirValue);
     calControlStr(gasValue, dirValue);
     //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
     fprintf(testfile,"dx=%d,dy=%d\nlast_dx=%d,last_dy=%d\nddx=%d,ddy=%d\n%s\n", dx,dy,last_dx,last_dy,ddx,ddy,ctrlStr);

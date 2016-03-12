@@ -1,6 +1,6 @@
 #define PID_P 1.0
 #define PID_D 3.0
-#define PID_I 0.025
+#define PID_I 0.01
 
 #include <stdio.h>
 #include <termios.h>
@@ -113,14 +113,9 @@ void getGasValue(int dy)
     if(dy>=127){
         dy = 125;
     }
-    if(dy<=0){
-        gasValue = - dy;
-    }
-    else{
-        gasValue = 128 + dy;
-    }
 /************************/
     pid_ysum += dy;
+	printf("data [PID]I_ysum%d\n",pid_ysum);
     ddy = dy - last_dy;
     printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
     last_dy = dy; 
@@ -132,6 +127,12 @@ void getGasValue(int dy)
         dy = 125;
     }
     printf("[PID OK] dy = %d\n",dy);
+    if(dy<=0){
+        gasValue = - dy;
+    }
+    else{
+        gasValue = 128 + dy;
+    }
 /************************/
     gasDeToHex(gasValue);
 }
@@ -143,14 +144,9 @@ void getDirValue(int dx)
     if(dx>=127){
         dx = 125;
     }
-    if(dx>=0){
-        dirValue = dx;
-    }
-    else{
-        dirValue = 128-dx;
-    }
 /************************/
     pid_xsum += dx;
+	printf("data [PID]I_xsum%d\n",pid_xsum);
     ddx = dx - last_dx;
     printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
     last_dx = dx;
@@ -162,6 +158,13 @@ void getDirValue(int dx)
         dx = 125;
     }
     printf("[PID OK] dx = %d\n",dx);
+/***.............modify*************/
+    if(dx>=0){
+        dirValue = dx;
+    }
+    else{
+        dirValue = 128-dx;
+    }
 /************************/
     dirDeToHex(dirValue);
 }
