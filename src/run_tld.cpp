@@ -45,8 +45,6 @@ char last2[2];
 
 
 /////
-int flag_landing = 0;
-int flag_adjust = 0;
 int flag_found = 0;
 int landing_width = 0;
 int landing_height = 0;
@@ -56,6 +54,9 @@ int ddx = 0;
 int ddy = 0;
 int pid_xsum = 0;
 int pid_ysum = 0;
+int ok_count = 0;
+int fly_status = 1;
+float adjust_k = 1.0;
 
 void readBB(char* file){
   ifstream bb_file (file);

@@ -17,8 +17,6 @@ extern char ctrlStr[20];
 extern int gasValue;
 extern int dirValue;
 extern int flag_found;
-extern int flag_landing;
-extern int flag_adjust;
 extern int landing_width;
 extern int landing_height;
 extern int ddx; 
@@ -27,6 +25,9 @@ extern int last_dx;
 extern int last_dy;
 extern int pid_ysum;
 extern int pid_xsum;
+extern int ok_count;
+extern int fly_status;
+extern float adjust_k;
 
 TLD::TLD()
 {
@@ -330,11 +331,10 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
     printf("data dx=%d, dy=%d, boxwidth=%d, boxheight=%d \n", dx, dy, lastbox.width, lastbox.height);
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
+    int tmp_gas = abs(dy);
+    int tmp_dir = abs(dx);
     getGasValue(-dy);
     getDirValue(dx);
-    /************v4 将sender.cpp中的calContrlStr函数的一段移动到这里更合适***********/
-    int tmp_gas = gasValue;
-    int tmp_dir = dirValue;
     if (gasValue > 128){
         tmp_gas -= 128;
     }
@@ -344,52 +344,49 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
     //现在tmp_dir和tmp_gas都为dx或dy的绝对值
     if (tmp_dir < 15 && tmp_gas < 15){//目标在中心
-        if (flag_landing == 0) {
-            //处于最开始的搜寻状态，则转为降落状态，
-            //并记录开始下降时的目标大小
-		pid_xsum = 0;
-		pid_ysum = 0;
-            flag_landing = 1;
-            landing_width = lastbox.width;
-            landing_height = lastbox.height;
-            printf("data [状态改变:1->2]\n");
-            printf("data [对准目标，开始下降]\n");
-            printf("data [对准目标，开始下降]\n");
-            fprintf(testfile,"data [状态改变:1->2]\n");
-            fprintf(testfile,"data [对准目标，开始下降]\n");
-        } else if (flag_adjust == 1) {
-            //处于调整状态，则暂时关闭调整状态
-            flag_adjust = 0;
-            printf("data [状态改变2->3]\n");
-            printf("data [调整完毕，继续下降]\n");
-            printf("data [调整完毕，继续下降]\n");
-            fprintf(testfile,"data [状态改变2->3]\n");
-            fprintf(testfile,"data [调整完毕，继续下降]\n");
+        if (fly_status == 1) {
+	    ok_count += 1;
+	    if(ok_count >= 25){ // 1->2
+		ok_count = 0;
+                fly_status = 2;
+            	//处于最开始的搜寻状态，则转为降落调整状态，
+           	//并记录开始下降时的目标大小
+            	landing_width = lastbox.width;
+            	landing_height = lastbox.height;
+            	printf("data [状态改变:1->2]\n");
+            	printf("data [对准目标，开始下降中调整]\n");
+            	printf("data [对准目标，开始下降中调整]\n");
+            	fprintf(testfile,"data [状态改变:1->2]\n");
+            	fprintf(testfile,"data [对准目标，开始下降中调整]\n");
+	    }
         }
+    } else{ //目标没有在中心
+        ok_count = 0;
     }
-    /****************************v4**************************************************/
-    float adjust_k = (float)lastbox.width/landing_width;
-    if (flag_landing == 1 && flag_adjust == 0){ 
-        if ( (tmp_dir>lastbox.width/2 || tmp_gas>lastbox.height/2) && adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW && lastbox.width <200 && lastbox.height < 200) {
+    if (fly_status == 2){ 
+        if (/*adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW &&*/ lastbox.width <150 && lastbox.height < 150) {
         //dx和dy的绝对值任意一个大于当前框的边长，且在可调整高度区间内，则开始调整
-            flag_adjust = 1;
-            printf("data [状态改变3->2]\n");
-            printf("data [暂停下降，开始调整]\n");
-            printf("data [暂停下降，开始调整]\n");
-            fprintf(testfile,"data [状态改变3->2]\n");
-            fprintf(testfile,"data [暂停下降，开始调整]\n");
+            adjust_k = (float)landing_width/lastbox.width;
+            printf("data 状态2 ：调整前gasValue = %d\n",gasValue);
+            gasValue = (int)(adjust_k * gasValue);
+            dirValue = (int)(adjust_k * dirValue);
+            printf("data 状态2 ：调整后gasValue = %d\n",gasValue);
+        } else{
+            printf("data [状态改变2->3]\n");
+            printf("data [调整结束，直接下降]\n");
+            printf("data [调整结束，直接下降]\n");
+            fprintf(testfile,"data [状态改变2->3]\n");
+            fprintf(testfile,"data [调整结束，直接下降]\n");
+            fly_status = 3;
         }
     }
-    /********************************************************************************/
-    calControlStr(gasValue, dirValue);
-    //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    calControlStr();
     sendControlStr();
   }
-  else{
+  else{//如果当前帧丢失目标，则设置标志位，生成控制字符串时，
     flag_found = 0;
-	printf("data [gasvalues]gasValue=%d,dirValue=%d\n ",gasValue,dirValue);
-    calControlStr(gasValue, dirValue);
-    //fprintf(testfile,"dx=%d,dy=%d\n%s\n", dx,dy,ctrlStr);
+    printf("data [gasvalues]gasValue=%d,dirValue=%d\n ",gasValue,dirValue);
+    calControlStr();
     fprintf(testfile,"dx=%d,dy=%d\nlast_dx=%d,last_dy=%d\nddx=%d,ddy=%d\n%s\n", dx,dy,last_dx,last_dy,ddx,ddy,ctrlStr);
     sendControlStr();
     fprintf(bb_file,"NaN,NaN,NaN,NaN,NaN\n");
