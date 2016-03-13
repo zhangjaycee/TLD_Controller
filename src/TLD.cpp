@@ -1,5 +1,5 @@
 #define X_CENTER 320
-#define Y_CENTER 240
+#define Y_CENTER 230
 #define ADJ_HIGH 1.0
 #define ADJ_LOW 2.5
 //ADJ_HIGHT 和 ADJ_LOW是第一次开始降落后，每一帧的当前框边长和开始下落边长之比adjust_k
@@ -335,18 +335,18 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     int tmp_dir = abs(dx);
     getGasValue(-dy);
     getDirValue(dx);
-    if (gasValue > 128){
-        tmp_gas -= 128;
+    if (tmp_gas > 128){
+        tmp_gas = 128;
     }
-    if (dirValue > 128){
-        tmp_dir -= 128;
+    if (tmp_dir > 128){
+        tmp_dir = 128;
     }
     printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
     //现在tmp_dir和tmp_gas都为dx或dy的绝对值
     if (tmp_dir < 15 && tmp_gas < 15){//目标在中心
         if (fly_status == 1) {
 	    ok_count += 1;
-	    if(ok_count >= 25){ // 1->2
+	    if(ok_count >= 50){ // 1->2
 		ok_count = 0;
                 fly_status = 2;
             	//处于最开始的搜寻状态，则转为降落调整状态，
@@ -364,7 +364,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
         ok_count = 0;
     }
     if (fly_status == 2){ 
-        if (/*adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW &&*/ lastbox.width <150 && lastbox.height < 150) {
+        if (/*adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW &&*/ lastbox.width < 150 && lastbox.height < 150) {
         //dx和dy的绝对值任意一个大于当前框的边长，且在可调整高度区间内，则开始调整
             adjust_k = (float)landing_width/lastbox.width;
             printf("data 状态2 ：调整前gasValue = %d\n",gasValue);

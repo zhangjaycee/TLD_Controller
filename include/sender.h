@@ -11,6 +11,6 @@ void dirDeToHex(int dirValue);
 void calLast2(char * str);
 void getGasValue(int dy);
 void getDirValue(int dx);
-void calControlStr(int gasValue,int dirValue);
+void calControlStr();
 void senderInit();
 void sendControlStr();

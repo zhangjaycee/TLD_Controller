@@ -1,6 +1,6 @@
 #define PID_P 1.0
 #define PID_D 3.0
-#define PID_I 0.015
+#define PID_I 0.01
 
 #include <stdio.h>
 #include <termios.h>
@@ -215,6 +215,12 @@ void calControlStr()
                 ctrlStr[7]=gasValueChars[0];
                 ctrlStr[8]=gasValueChars[1];
                 //crtlStr[9/10]不变
+        }
+    }else {
+	if(fly_status == 3) {
+            ctrlStr[9] = '0';
+            ctrlStr[10] = 'A';
+            
         }
     }
     ctrlStr[11]='\0';
