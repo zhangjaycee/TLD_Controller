@@ -25,6 +25,8 @@ extern int ddx;
 extern int ddy;
 extern int last_dx;
 extern int last_dy;
+extern int pid_ysum;
+extern int pid_xsum;
 
 TLD::TLD()
 {
@@ -341,10 +343,12 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     }
     printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
     //现在tmp_dir和tmp_gas都为dx或dy的绝对值
-    if (tmp_dir < 5 && tmp_gas < 5){//目标在中心
+    if (tmp_dir < 15 && tmp_gas < 15){//目标在中心
         if (flag_landing == 0) {
             //处于最开始的搜寻状态，则转为降落状态，
             //并记录开始下降时的目标大小
+		pid_xsum = 0;
+		pid_ysum = 0;
             flag_landing = 1;
             landing_width = lastbox.width;
             landing_height = lastbox.height;
@@ -366,7 +370,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     /****************************v4**************************************************/
     float adjust_k = (float)lastbox.width/landing_width;
     if (flag_landing == 1 && flag_adjust == 0){ 
-        if ( (tmp_dir>lastbox.width/2 || tmp_gas>lastbox.height/2) && adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW) {
+        if ( (tmp_dir>lastbox.width/2 || tmp_gas>lastbox.height/2) && adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW && lastbox.width <200 && lastbox.height < 200) {
         //dx和dy的绝对值任意一个大于当前框的边长，且在可调整高度区间内，则开始调整
             flag_adjust = 1;
             printf("data [状态改变3->2]\n");

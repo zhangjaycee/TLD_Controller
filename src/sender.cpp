@@ -1,6 +1,6 @@
 #define PID_P 1.0
 #define PID_D 3.0
-#define PID_I 0.01
+#define PID_I 0.015
 
 #include <stdio.h>
 #include <termios.h>
