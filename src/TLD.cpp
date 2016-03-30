@@ -26,6 +26,9 @@ extern int last_dy;
 extern int pid_ysum;
 extern int pid_xsum;
 extern int ok_count;
+extern int bad_count;
+extern int ok_flag;
+extern int bad_flag;
 extern int fly_status;
 extern float adjust_k;
 
@@ -325,71 +328,79 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
   lastbox=bbnext;
   if (lastboxfound){
     flag_found = 1;
-    fprintf(bb_file,"%d,%d,%d,%d,%f\n",lastbox.x,lastbox.y,lastbox.br().x,lastbox.br().y,lastconf);
-    //fprintf(testfile,"dx=%d,dy=%d\n",lastbox.x-X_CENTER,lastbox.y-Y_CENTER);
     dx=(lastbox.x + int(lastbox.width/2) -X_CENTER)/2;
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
-    printf("data dx=%d, dy=%d, boxwidth=%d, boxheight=%d \n", dx, dy, lastbox.width, lastbox.height);
+    printf("data 偏差(%d, %d) 目标大小(%dx%d) ", dx, dy, lastbox.width, lastbox.height);
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
-    int tmp_gas = abs(dy);
-    int tmp_dir = abs(dx);
+    if (abs(dy) < 15 && abs(dx) < 15){//目标在中心
+	    ok_count ++;
+        bad_flag = 0;
+        bad_count =0;
+	    if(ok_count >= 50){
+		    ok_flag = 1;
+	    }
+    } else{ //目标没有在中心
+        bad_count ++;
+        ok_flag = 0;
+        ok_count = 0;
+	    if(bad_count >= 3){
+		    bad_flag = 1;
+	    }
+    }
+    adjust_k = (float)landing_width/lastbox.width; // <1
+    //adjust_k = (float)lastbox.width/landing_width; // >1
+    switch(fly_status){
+        case 1:
+            if(ok_flag){
+                fly_status = 2;
+                landing_width = lastbox.width;
+                landing_height= lastbox.height;
+            }
+            break;
+        case 2:
+            if(lastbox.width > 150 || lastbox.height >150){
+                fly_status = 4;
+            } else if(bad_flag){
+                fly_status = 3;
+            } else {
+                //dy = (int)(dy * adjust_k);
+                //dx = (int)(dx * adjust_k);
+                ;
+            }
+            break;
+        case 3:
+            if(ok_flag){
+                fly_status = 2;
+            }
+            break;
+        case 4:
+            break;
+    }
+    /*
+    switch(fly_status){
+        case 1:
+            printf("data [状态1:初次调整] ");
+            break;
+        case 2:
+            printf("data [状态2:尝试下降] ");
+            break;
+        case 3:
+            printf("data [状态3:再次调整] ");
+            break;
+        case 4:
+            printf("data [状态4:直接下降] ");
+            break;
+    }
+    */
     getGasValue(-dy);
     getDirValue(dx);
-    if (tmp_gas > 128){
-        tmp_gas = 128;
-    }
-    if (tmp_dir > 128){
-        tmp_dir = 128;
-    }
-    printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
-    //现在tmp_dir和tmp_gas都为dx或dy的绝对值
-    if (tmp_dir < 15 && tmp_gas < 15){//目标在中心
-        if (fly_status == 1) {
-	    ok_count += 1;
-	    if(ok_count >= 50){ // 1->2
-		ok_count = 0;
-                fly_status = 2;
-            	//处于最开始的搜寻状态，则转为降落调整状态，
-           	//并记录开始下降时的目标大小
-            	landing_width = lastbox.width;
-            	landing_height = lastbox.height;
-            	printf("data [状态改变:1->2]\n");
-            	printf("data [对准目标，开始下降中调整]\n");
-            	printf("data [对准目标，开始下降中调整]\n");
-            	fprintf(testfile,"data [状态改变:1->2]\n");
-            	fprintf(testfile,"data [对准目标，开始下降中调整]\n");
-	    }
-        }
-    } else{ //目标没有在中心
-        ok_count = 0;
-    }
-    if (fly_status == 2){ 
-        if (/*adjust_k > ADJ_HIGH && adjust_k < ADJ_LOW &&*/ lastbox.width < 150 && lastbox.height < 150) {
-        //dx和dy的绝对值任意一个大于当前框的边长，且在可调整高度区间内，则开始调整
-            adjust_k = (float)landing_width/lastbox.width;
-            printf("data 状态2 ：调整前gasValue = %d\n",gasValue);
-            gasValue = (int)(adjust_k * gasValue);
-            dirValue = (int)(adjust_k * dirValue);
-            printf("data 状态2 ：调整后gasValue = %d\n",gasValue);
-        } else{
-            printf("data [状态改变2->3]\n");
-            printf("data [调整结束，直接下降]\n");
-            printf("data [调整结束，直接下降]\n");
-            fprintf(testfile,"data [状态改变2->3]\n");
-            fprintf(testfile,"data [调整结束，直接下降]\n");
-            fly_status = 3;
-        }
-    }
     calControlStr();
     sendControlStr();
   }
   else{//如果当前帧丢失目标，则设置标志位，生成控制字符串时，
     flag_found = 0;
-    printf("data [gasvalues]gasValue=%d,dirValue=%d\n ",gasValue,dirValue);
     calControlStr();
-    fprintf(testfile,"dx=%d,dy=%d\nlast_dx=%d,last_dy=%d\nddx=%d,ddy=%d\n%s\n", dx,dy,last_dx,last_dy,ddx,ddy,ctrlStr);
     sendControlStr();
-    fprintf(bb_file,"NaN,NaN,NaN,NaN,NaN\n");
   }
   if (lastvalid && tl)
     learn(img2);

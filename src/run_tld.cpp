@@ -46,8 +46,8 @@ char last2[2];
 
 /////
 int flag_found = 0;
-int landing_width = 0;
-int landing_height = 0;
+int landing_width = 1000;//>> 640
+int landing_height = 1000;// >> 480
 int last_dy = 0;
 int last_dx = 0;
 int ddx = 0;
@@ -55,6 +55,10 @@ int ddy = 0;
 int pid_xsum = 0;
 int pid_ysum = 0;
 int ok_count = 0;
+int bad_count = 0;
+int ok_flag = 0;
+int bad_flag =0;
+
 int fly_status = 1;
 float adjust_k = 1.0;
 

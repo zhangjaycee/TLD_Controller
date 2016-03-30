@@ -93,31 +93,10 @@ void calLast2(char * str){
 
 void getGasValue(int dy)
 {
-    /*
-   if(dy>0){
-        if(dy<30){
-            gasValue=dy*4;
-        }else if(dy<60){
-            gasValue=(dy-30)*1+120;
-        }else if(dy<70){
-            gasValue=(dy-60)*0.8+150;
-        }else if(dy>=70){
-            gasValue=160;
-        }
-    }else{
-        gasValue=0;
-    }*/
-    if(dy<=-128){
-        dy =-125;
-    }
-    if(dy>=127){
-        dy = 125;
-    }
-/************************/
     pid_ysum += dy;
-	printf("data [PID]I_ysum%d\n",pid_ysum);
+	//printf("data [PID]I_ysum%d\n",pid_ysum);
     ddy = dy - last_dy;
-    printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
+    //printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
     last_dy = dy; 
     dy = PID_P * dy + PID_D * ddy + PID_I * pid_ysum;
     if(dy<=-128){
@@ -126,29 +105,21 @@ void getGasValue(int dy)
     if(dy>=127){
         dy = 125;
     }
-    printf("[PID OK] dy = %d\n",dy);
+    //printf("[PID OK] dy = %d\n",dy);
     if(dy<=0){
         gasValue = - dy;
     }
     else{
         gasValue = 128 + dy;
     }
-/************************/
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
 {
-    if(dx<=-128){
-        dx =-125;
-    }
-    if(dx>=127){
-        dx = 125;
-    }
-/************************/
     pid_xsum += dx;
-	printf("data [PID]I_xsum%d\n",pid_xsum);
+	//printf("data [PID]I_xsum%d\n",pid_xsum);
     ddx = dx - last_dx;
-    printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
+    //printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
     last_dx = dx;
     dx = PID_P * dx + PID_D * ddx + PID_I * pid_xsum;
     if(dx<=-128){
@@ -157,15 +128,13 @@ void getDirValue(int dx)
     if(dx>=127){
         dx = 125;
     }
-    printf("[PID OK] dx = %d\n",dx);
-/***.............modify*************/
+    //printf("[PID OK] dx = %d\n",dx);
     if(dx>=0){
         dirValue = dx;
     }
     else{
         dirValue = 128-dx;
     }
-/************************/
     dirDeToHex(dirValue);
 }
 /*
@@ -184,44 +153,25 @@ void calControlStr()
     //           gas  pitch roll yaw  
     //           高低 前后  左右 偏航 校验
     //           dir  gas        land?
-    /*************v4 移动到了TLD.cpp控制这些flag*****************
-    int tmp_gas = gasValue;
-    int tmp_dir = dirValue;
-    if (gasValue > 128){
-        tmp_gas -= 128;
-    }
-    if (dirValue > 128){
-        tmp_dir -= 128;
-    }
-    printf("data [gas]abs(dy)=%d,[dir]abs(dx)=%d\n",tmp_gas,tmp_dir);
-    //现在tmp_dir和tmp_gas都为dx或dy的绝对值
-    if (tmp_dir < 5 && tmp_gas < 5){
-        flag_landing = 1;
-        
-    }
-    *************v4 移动到了TLD.cpp控制这些flag******************/
     ctrlStr[0]=':'; ctrlStr[1]='R';ctrlStr[2]='C';
     for(int i=3;i<=10;i++){
         ctrlStr[i]='0';
     }//现在:[: RC 00 00 00 00]
     if(flag_found){ //如果当前帧中目标没有丢失，对字符串赋值，否则保持0
-        if(fly_status == 3 || fly_status == 2){//状态3:直接降落[: RC 00 00 00 10 ]
+        if(fly_status == 2 || fly_status == 4){//状态2/4:降落[: RC 00 00 00 10 ]
             ctrlStr[9] = '0';
             ctrlStr[10] = 'A';
         }
-        else if (fly_status == 1 || fly_status == 2) {//状态1与状态3:降落标志是0:[: RC xx xx 00 00 xx /]
+        else if (fly_status == 1 || fly_status == 3) {//状态1/3:不降落[: RC xx xx 00 00 xx /]
                 ctrlStr[5]=dirValueChars[0];
                 ctrlStr[6]=dirValueChars[1];
                 ctrlStr[7]=gasValueChars[0];
                 ctrlStr[8]=gasValueChars[1];
                 //crtlStr[9/10]不变
         }
-    }else {
-	if(fly_status == 3) {
+    }else if(flag_found == 0 && fly_status == 4){//没有目标时只有状态4降落
             ctrlStr[9] = '0';
             ctrlStr[10] = 'A';
-            
-        }
     }
     ctrlStr[11]='\0';
     calLast2(ctrlStr);
@@ -256,9 +206,23 @@ void senderInit(){
 
 void sendControlStr()
 {
+    switch(fly_status){
+        case 1:
+            printf("data [状态1:初次调整] ");
+            break;
+        case 2:
+            printf("data [状态2:尝试下降] ");
+            break;
+        case 3:
+            printf("data [状态3:再次调整] ");
+            break;
+        case 4:
+            printf("data [状态4:直接下降] ");
+            break;
+    }
     if(!open_error_flag){
         write(fd,ctrlStr, strlen(ctrlStr));
-        printf("data [send success] %s\n",ctrlStr);
+        printf("data [send success: %s] \n",ctrlStr);
     }else
-        printf("data [send failed] %s\n",ctrlStr);
+        printf("data [send failed: %s] \n",ctrlStr);
 }
