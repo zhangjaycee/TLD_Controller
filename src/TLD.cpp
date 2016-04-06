@@ -332,19 +332,22 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
     printf("data 偏差(%d, %d) 目标大小(%dx%d) ", dx, dy, lastbox.width, lastbox.height);
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
-    if (abs(dy) < 15 && abs(dx) < 15){//目标在中心
+    if (abs(dy) < (0.01*lastbox.width+10) && abs(dx) < (0.01*lastbox.width+10)){//目标在中心
+        if(ok_count<0)
+                ok_count = 0;
 	    ok_count ++;
         bad_flag = 0;
         bad_count =0;
-	    if(ok_count >= 50){
+	    if(ok_count >= 15){
 		    ok_flag = 1;
 	    }
     } else{ //目标没有在中心
         bad_count ++;
-        ok_flag = 0;
-        ok_count = 0;
-	    if(bad_count >= 3){
+        ok_count--;
+	    if(bad_count >= 5){
+            ok_flag = 0;
 		    bad_flag = 1;
+            ok_count = 0;
 	    }
     }
     adjust_k = (float)landing_width/lastbox.width; // <1
