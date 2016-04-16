@@ -1,4 +1,4 @@
-//#define ADJ_TIMES 25
+#define ADJ_TIMES 15
 #define CHECK_TIMES 5
 #define X_CENTER 320
 #define Y_CENTER 240
@@ -376,7 +376,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
 		        pid_ysum = 0;
                 fly_status = 3;
                 //adjust_count = ADJ_TIMES;
-                adjust_count = abs(dx) + abs(dy);
+                adjust_count = ADJ_TIMES;
                 adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
                 printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
             } else {
@@ -386,32 +386,42 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             }
             break;
         case 3:
-            if(adjust_count-- > adjust_x_times){
-                dy = dy / abs(dy) * 30;
+            if(adjust_count > adjust_x_times){
+		if(dy > 0)
+                	dy = 30;
+		else if(dy < 0)
+			dy = -30;
                 //dy = (int)(dy * adjust_k) + 10;
                 dx = 0;
-            }else if(adjust_count-- > 0){
-                dx = dx / abs(dx) * 30;
+		adjust_count--;
+            }else if(adjust_count > 0){
+		if(dx > 0)
+                	dx = 30;
+		else if(dx < 0)
+			dx = -30;
                 //dx = (int)(dx * adjust_k) + 10;
                 dy = 0;
+		adjust_count--;
             }else{
                 fly_status = 4;
                 check_count = CHECK_TIMES;
             }
             break;
         case 4:
-            if(check_count-- > 0){
+            if(check_count > 0){
+		check_count--;
                 dx = dy = 0;
                 break;
             }else{
                 if (abs(dy) < (0.1*lastbox.width+10) && abs(dx) < (0.1*lastbox.width+10)){//目标在中心
                     fly_status = 2;
+		    break;
                 }else{
                     pid_xsum = 0;
-		            pid_ysum = 0;
+		    pid_ysum = 0;
                     fly_status = 3;
                     //adjust_count = ADJ_TIMES;
-                    adjust_count = abs(dx) + abs(dy);
+                    adjust_count = ADJ_TIMES;
                     adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
                     printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
                     break;

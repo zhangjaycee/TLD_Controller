@@ -1,6 +1,6 @@
 #define PID_P 1.2
 #define PID_D 3.0
-#define PID_I 0.02
+#define PID_I 0.01
 
 #include <stdio.h>
 #include <termios.h>
@@ -252,8 +252,8 @@ void sendControlStr()
     */
     if(!open_error_flag){
         write(fd,ctrlStr, strlen(ctrlStr));
-        //printf("data [send success: %s] \n",ctrlStr);
+        printf("data [send success: %s] \n",ctrlStr);
     }else{
-        //printf("data [send failed: %s] \n",ctrlStr);
+        printf("data [send failed: %s] \n",ctrlStr);
     }
 }
