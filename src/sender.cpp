@@ -99,7 +99,9 @@ void getGasValue(int dy)
     ddy = dy - last_dy;
     //printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
     last_dy = dy; 
-    	dy = adjust_k * (PID_P * dy + PID_D * ddy + PID_I * pid_ysum);
+    if(fly_status != 3){
+        dy = adjust_k * (PID_P * dy + PID_D * ddy + PID_I * pid_ysum);
+    }
     if(dy<=-128){
         dy =-125;
     }
@@ -113,7 +115,25 @@ void getGasValue(int dy)
     else{
         gasValue = 128 + dy;
     }
-    printf("data [adjust_k]= %.4f  [gas]= %d  [y_isum]= %d\n",adjust_k, dy, pid_ysum);
+    switch(fly_status){
+        case 1:
+            printf("data [状态1:初次调整] ");
+            break;
+        case 2:
+            printf("data [状态2:尝试下降] ");
+            break;
+        case 3:
+            printf("data [状态3:再次调整] ");
+            break;
+        case 4:
+            printf("data [状态4:检查调整] ");
+            break;
+        case 5:
+            printf("data [状态5:直接下降] ");
+            break;
+    }
+    //printf("data [adjust_k]= %.4f  [gas]= %d  [y_isum]= %d",adjust_k, dy, pid_ysum);
+    printf("data [adjust_k]= %.4f [Y_gas]= %d ",adjust_k, dy);
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
@@ -123,7 +143,9 @@ void getDirValue(int dx)
     ddx = dx - last_dx;
     //printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
     last_dx = dx;
+    if(fly_status!=3){
     	dx = adjust_k * (PID_P * dx + PID_D * ddx + PID_I * pid_xsum);
+    }
     if(dx<=-128){
         dx =-125;
     }
@@ -137,7 +159,7 @@ void getDirValue(int dx)
     else{
         dirValue = 128-dx;
     }
-	printf("data[adjust_k]= %.4f [x gas]= %d  [x_isum]= %d\n",adjust_k,  dx, pid_xsum);
+	printf("data [X_gas]= %d\n", dx);
     dirDeToHex(dirValue);
 }
 /*
@@ -161,7 +183,7 @@ void calControlStr()
         ctrlStr[i]='0';
     }//现在:[: RC 00 00 00 00]
     if(flag_found){ //如果当前帧中目标没有丢失，对字符串赋值，否则保持0
-        if(fly_status == 2 || fly_status == 4){//状态2/4:降落[: RC 00 00 00 10 ]
+        if(fly_status == 2 || fly_status == 5){//状态2/5:降落[: RC 00 00 00 10 ]
             ctrlStr[9] = '0';
             ctrlStr[10] = 'A';
         }
@@ -172,7 +194,8 @@ void calControlStr()
                 ctrlStr[8]=gasValueChars[1];
                 //crtlStr[9/10]不变
         }
-    }else if(flag_found == 0 && fly_status == 4){//没有目标时只有状态4降落
+        //else{} //状态4悬停检查
+    }else if(flag_found == 0 && fly_status == 5){//没有目标时只有状态5降落
             ctrlStr[9] = '0';
             ctrlStr[10] = 'A';
     }
@@ -208,7 +231,7 @@ void senderInit(){
 }
 
 void sendControlStr()
-{
+{/*
     switch(fly_status){
         case 1:
             printf("data [状态1:初次调整] ");
@@ -220,12 +243,17 @@ void sendControlStr()
             printf("data [状态3:再次调整] ");
             break;
         case 4:
-            printf("data [状态4:直接下降] ");
+            printf("data [状态4:检查调整] ");
+            break;
+        case 5:
+            printf("data [状态5:直接下降] ");
             break;
     }
+    */
     if(!open_error_flag){
         write(fd,ctrlStr, strlen(ctrlStr));
-        printf("data [send success: %s] \n",ctrlStr);
-    }else
-        printf("data [send failed: %s] \n",ctrlStr);
+        //printf("data [send success: %s] \n",ctrlStr);
+    }else{
+        //printf("data [send failed: %s] \n",ctrlStr);
+    }
 }

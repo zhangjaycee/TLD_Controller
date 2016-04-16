@@ -1,3 +1,5 @@
+//#define ADJ_TIMES 25
+#define CHECK_TIMES 5
 #define X_CENTER 320
 #define Y_CENTER 240
 #define ADJ_HIGH 1.0
@@ -31,6 +33,9 @@ extern int ok_flag;
 extern int bad_flag;
 extern int fly_status;
 extern float adjust_k;
+int adjust_count;
+int adjust_x_times;
+int check_count;
 
 TLD::TLD()
 {
@@ -350,7 +355,7 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             ok_count = 0;
 	    }
     }
-    if(fly_status == 2 || fly_status == 4 || fly_status == 3){
+    if(fly_status == 2 || fly_status == 5 || fly_status == 3){
         adjust_k = (float)landing_width/lastbox.width; // <1
     }else
 	adjust_k = 1;
@@ -365,11 +370,15 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             break;
         case 2:
             if(lastbox.width > 170 || lastbox.height >170){
-                fly_status = 4;
+                fly_status = 5;
             } else if(bad_flag){
                 pid_xsum = 0;
-		pid_ysum = 0;
+		        pid_ysum = 0;
                 fly_status = 3;
+                //adjust_count = ADJ_TIMES;
+                adjust_count = abs(dx) + abs(dy);
+                adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
+                printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
             } else {
                 //dy = (int)(dy * adjust_k);
                 //dx = (int)(dx * adjust_k);
@@ -377,29 +386,40 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             }
             break;
         case 3:
-            if(ok_flag){
-                fly_status = 2;
+            if(adjust_count-- > adjust_x_times){
+                dy = dy / abs(dy) * 30;
+                //dy = (int)(dy * adjust_k) + 10;
+                dx = 0;
+            }else if(adjust_count-- > 0){
+                dx = dx / abs(dx) * 30;
+                //dx = (int)(dx * adjust_k) + 10;
+                dy = 0;
+            }else{
+                fly_status = 4;
+                check_count = CHECK_TIMES;
             }
             break;
         case 4:
+            if(check_count-- > 0){
+                dx = dy = 0;
+                break;
+            }else{
+                if (abs(dy) < (0.1*lastbox.width+10) && abs(dx) < (0.1*lastbox.width+10)){//目标在中心
+                    fly_status = 2;
+                }else{
+                    pid_xsum = 0;
+		            pid_ysum = 0;
+                    fly_status = 3;
+                    //adjust_count = ADJ_TIMES;
+                    adjust_count = abs(dx) + abs(dy);
+                    adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
+                    printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
+                    break;
+                }
+            }
+        case 5:
             break;
     }
-    /*
-    switch(fly_status){
-        case 1:
-            printf("data [状态1:初次调整] ");
-            break;
-        case 2:
-            printf("data [状态2:尝试下降] ");
-            break;
-        case 3:
-            printf("data [状态3:再次调整] ");
-            break;
-        case 4:
-            printf("data [状态4:直接下降] ");
-            break;
-    }
-    */
     getGasValue(-dy);
     getDirValue(dx);
     calControlStr();
