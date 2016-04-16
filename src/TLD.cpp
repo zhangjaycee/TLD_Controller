@@ -1,5 +1,5 @@
 #define X_CENTER 320
-#define Y_CENTER 230
+#define Y_CENTER 240
 #define ADJ_HIGH 1.0
 #define ADJ_LOW 2.5
 //ADJ_HIGHT 和 ADJ_LOW是第一次开始降落后，每一帧的当前框边长和开始下落边长之比adjust_k
@@ -330,9 +330,9 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
     flag_found = 1;
     dx=(lastbox.x + int(lastbox.width/2) -X_CENTER)/2;
     dy=(lastbox.y+ int(lastbox.height/2) -Y_CENTER)/2;
-    printf("data 偏差(%d, %d) 目标大小(%dx%d) ", dx, dy, lastbox.width, lastbox.height);
+    printf("data 偏差(%d, %d) 目标大小(%dx%d) 允许误差(%d)", dx, dy, lastbox.width, lastbox.height,(int)(0.1*lastbox.width + 10));
     pts_history.push_back(Point2f((float)(lastbox.x+lastbox.width/2), (float)lastbox.y+lastbox.height/2));
-    if (abs(dy) < (0.01*lastbox.width+10) && abs(dx) < (0.01*lastbox.width+10)){//目标在中心
+    if (abs(dy) < (0.1*lastbox.width+10) && abs(dx) < (0.1*lastbox.width+10)){//目标在中心
         if(ok_count<0)
                 ok_count = 0;
 	    ok_count ++;
@@ -350,7 +350,10 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             ok_count = 0;
 	    }
     }
-    adjust_k = (float)landing_width/lastbox.width; // <1
+    if(fly_status == 2 || fly_status == 4 || fly_status == 3){
+        adjust_k = (float)landing_width/lastbox.width; // <1
+    }else
+	adjust_k = 1;
     //adjust_k = (float)lastbox.width/landing_width; // >1
     switch(fly_status){
         case 1:
@@ -361,9 +364,11 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             }
             break;
         case 2:
-            if(lastbox.width > 150 || lastbox.height >150){
+            if(lastbox.width > 170 || lastbox.height >170){
                 fly_status = 4;
             } else if(bad_flag){
+                pid_xsum = 0;
+		pid_ysum = 0;
                 fly_status = 3;
             } else {
                 //dy = (int)(dy * adjust_k);

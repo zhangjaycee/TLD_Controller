@@ -1,6 +1,6 @@
-#define PID_P 1.0
+#define PID_P 1.2
 #define PID_D 3.0
-#define PID_I 0.01
+#define PID_I 0.02
 
 #include <stdio.h>
 #include <termios.h>
@@ -36,6 +36,7 @@ extern int pid_xsum;
 extern int pid_ysum;
 extern float adjust_k;
 extern int fly_status;
+extern int landing_width;
 
 void gasDeToHex(int gasValue)
 {
@@ -98,7 +99,7 @@ void getGasValue(int dy)
     ddy = dy - last_dy;
     //printf("data [PID]dy = %d,last_dy = %d,ddy = %d",dy , last_dy, ddy); 
     last_dy = dy; 
-    dy = PID_P * dy + PID_D * ddy + PID_I * pid_ysum;
+    	dy = adjust_k * (PID_P * dy + PID_D * ddy + PID_I * pid_ysum);
     if(dy<=-128){
         dy =-125;
     }
@@ -112,6 +113,7 @@ void getGasValue(int dy)
     else{
         gasValue = 128 + dy;
     }
+    printf("data [adjust_k]= %.4f  [gas]= %d  [y_isum]= %d\n",adjust_k, dy, pid_ysum);
     gasDeToHex(gasValue);
 }
 void getDirValue(int dx)
@@ -121,7 +123,7 @@ void getDirValue(int dx)
     ddx = dx - last_dx;
     //printf("data [PID]dx = %d,last_dx = %d,ddx = %d",dx , last_dx, ddx); 
     last_dx = dx;
-    dx = PID_P * dx + PID_D * ddx + PID_I * pid_xsum;
+    	dx = adjust_k * (PID_P * dx + PID_D * ddx + PID_I * pid_xsum);
     if(dx<=-128){
         dx =-125;
     }
@@ -135,6 +137,7 @@ void getDirValue(int dx)
     else{
         dirValue = 128-dx;
     }
+	printf("data[adjust_k]= %.4f [x gas]= %d  [x_isum]= %d\n",adjust_k,  dx, pid_xsum);
     dirDeToHex(dirValue);
 }
 /*
