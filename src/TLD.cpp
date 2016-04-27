@@ -1,4 +1,4 @@
-#define ADJ_TIMES 15
+#define ADJ_TIMES 7
 #define CHECK_TIMES 5
 #define X_CENTER 320
 #define Y_CENTER 240
@@ -14,6 +14,7 @@
 #include "sender.h"
 using namespace cv;
 using namespace std;
+int adjust_gas[ADJ_TIMES] = {10, 25, 40, 40, 40, 25, 10};
 extern int dx,dy;
 extern char ctrlStr[20];
 extern int gasValue;
@@ -377,7 +378,11 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
                 fly_status = 3;
                 //adjust_count = ADJ_TIMES;
                 adjust_count = ADJ_TIMES;
-                adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
+                if(abs(dx)>abs(dy))
+                        adjust_x_times = ADJ_TIMES;
+                else
+                        adjust_x_times = 0;
+                //adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
                 printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
             } else {
                 //dy = (int)(dy * adjust_k);
@@ -387,21 +392,23 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
             break;
         case 3:
             if(adjust_count > adjust_x_times){
-		if(dy > 0)
-                	dy = 30;
-		else if(dy < 0)
-			dy = -30;
-                //dy = (int)(dy * adjust_k) + 10;
+		        if(dy > 0)
+                	dy = adjust_gas[adjust_count-1];
+                    //dy = 30;
+		        else if(dy < 0)
+                	dy = -adjust_gas[adjust_count-1];
+			        //dy = -30;
                 dx = 0;
-		adjust_count--;
+		        adjust_count--;
             }else if(adjust_count > 0){
-		if(dx > 0)
-                	dx = 30;
-		else if(dx < 0)
-			dx = -30;
-                //dx = (int)(dx * adjust_k) + 10;
+		        if(dx > 0)
+                	//dx = 30;
+                	dx = adjust_gas[adjust_count-1];
+		        else if(dx < 0)
+			        //dx = -30;
+                	dx = -adjust_gas[adjust_count-1];
                 dy = 0;
-		adjust_count--;
+		        adjust_count--;
             }else{
                 fly_status = 4;
                 check_count = CHECK_TIMES;
@@ -420,9 +427,12 @@ void TLD::processFrame(const cv::Mat& img1,const cv::Mat& img2,vector<Point2f>& 
                     pid_xsum = 0;
 		    pid_ysum = 0;
                     fly_status = 3;
-                    //adjust_count = ADJ_TIMES;
                     adjust_count = ADJ_TIMES;
-                    adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
+                    //adjust_x_times = (int)(adjust_count * abs(dx) / (abs(dx)+abs(dy)));
+                    if(abs(dx)>abs(dy))
+                        adjust_x_times = ADJ_TIMES;
+                    else
+                        adjust_x_times = 0;
                     printf("data --=={x_tims}= %d {y_times}= %d ==--", adjust_x_times, adjust_count- adjust_x_times);
                     break;
                 }
